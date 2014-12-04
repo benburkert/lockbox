@@ -2,8 +2,10 @@ package lockbox
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/pem"
-
+	"io"
+	"sync"
 	"testing"
 )
 
@@ -24,6 +26,59 @@ func TestEncryptionWithZeros(t *testing.T) {
 
 	if !bytes.Equal(got, zeroData) {
 		t.Errorf("got %s, want %s", got, zeroData)
+	}
+}
+
+func TestEncryptionIdempotent(t *testing.T) {
+	var pk [32]byte
+	ekey, _, err := GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bpk, _ := pem.Decode(ekey)
+	copy(pk[:], bpk.Bytes)
+
+	r1, pw := io.Pipe()
+	r2 := io.TeeReader(rand.Reader, pw)
+
+	e1 := &Encryptor{
+		pk: &pk,
+		r:  r1,
+	}
+
+	e2 := &Encryptor{
+		pk: &pk,
+		r:  r2,
+	}
+
+	data := []byte("Kill all humans")
+	var b1, b2 []byte
+
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		var err error
+		b1, err = e1.Encrypt(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		var err error
+		b2, err = e2.Encrypt(data)
+		if err != nil {
+			t.Fatal(err)
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
+
+	if !bytes.Equal(b1, b2) {
+		t.Errorf("got different ciphertext, %s != %s", string(b1), string(b2))
 	}
 }
 
