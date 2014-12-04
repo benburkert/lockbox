@@ -10,13 +10,13 @@ import (
 )
 
 func TestEncryptionWithZeros(t *testing.T) {
-	var zk [32]byte
+	var pk [32]byte
 	b, _ := pem.Decode(zeroEKey)
-	copy(zk[:], b.Bytes)
+	copy(pk[:], b.Bytes)
 
 	e := &Encryptor{
-		pk: &zk,
-		r:  zeros,
+		PK:     &pk,
+		Reader: zeros,
 	}
 
 	got, err := e.Encrypt([]byte("Kill all humans"))
@@ -42,13 +42,13 @@ func TestEncryptionIdempotent(t *testing.T) {
 	r2 := io.TeeReader(rand.Reader, pw)
 
 	e1 := &Encryptor{
-		pk: &pk,
-		r:  r1,
+		PK:     &pk,
+		Reader: r1,
 	}
 
 	e2 := &Encryptor{
-		pk: &pk,
-		r:  r2,
+		PK:     &pk,
+		Reader: r2,
 	}
 
 	data := []byte("Kill all humans")

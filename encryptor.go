@@ -16,9 +16,8 @@ var b64 = base64.StdEncoding
 
 // Encryptor encrypts data with an encryption (public) key.
 type Encryptor struct {
-	pk *[32]byte
-
-	r io.Reader
+	PK     *[32]byte // public key
+	Reader io.Reader // random data source
 }
 
 // NewEncryptor returns an Encryptor for the encryption (public) key PEM block.
@@ -31,8 +30,8 @@ func NewEncryptor(ekey *pem.Block) (*Encryptor, error) {
 	copy(pk[:], ekey.Bytes)
 
 	return &Encryptor{
-		pk: pk,
-		r:  rand.Reader,
+		PK:     pk,
+		Reader: rand.Reader,
 	}, nil
 }
 
@@ -64,15 +63,15 @@ func LoadEncryptor(ekeyFile string) (*Encryptor, error) {
 //   Nonce:       nonce value used during encryption & decryption
 func (e *Encryptor) Encrypt(data []byte) ([]byte, error) {
 	var nonce [24]byte
-	e.r.Read(nonce[:])
-	pk, sk, err := box.GenerateKey(e.r)
+	e.Reader.Read(nonce[:])
+	pk, sk, err := box.GenerateKey(e.Reader)
 	if err != nil {
 		return nil, err
 	}
 
-	ct := box.Seal(nil, data, &nonce, e.pk, sk)
+	ct := box.Seal(nil, data, &nonce, e.PK, sk)
 	hdrs := map[string]string{
-		"Fingerprint": b64.EncodeToString(e.pk[:]),
+		"Fingerprint": b64.EncodeToString(e.PK[:]),
 		"Public-Key":  b64.EncodeToString(pk[:]),
 		"Nonce":       b64.EncodeToString(nonce[:]),
 	}

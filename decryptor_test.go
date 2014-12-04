@@ -15,8 +15,8 @@ func TestDecryptionWithZeros(t *testing.T) {
 	curve25519.ScalarBaseMult(&pk, &sk)
 
 	d := &Decryptor{
-		pk: &pk,
-		sk: &sk,
+		PK: &pk,
+		SK: &sk,
 	}
 
 	want := []byte("Kill all humans")

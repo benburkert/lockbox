@@ -12,7 +12,7 @@ import (
 
 // Decryptor decrypts data with a decryption (secret) key.
 type Decryptor struct {
-	pk, sk *[32]byte
+	PK, SK *[32]byte // public key, secret key
 }
 
 // NewDecryptor returns a Decryptor for decrypting data encrypted with the
@@ -27,8 +27,8 @@ func NewDecryptor(dkey *pem.Block) (*Decryptor, error) {
 	curve25519.ScalarBaseMult(pk, sk)
 
 	return &Decryptor{
-		pk: pk,
-		sk: sk,
+		PK: pk,
+		SK: sk,
 	}, nil
 }
 
@@ -64,7 +64,7 @@ func (d *Decryptor) Decrypt(data []byte) ([]byte, error) {
 	}
 
 	fp := b.Headers["Fingerprint"]
-	if fp != b64.EncodeToString(d.pk[:]) {
+	if fp != b64.EncodeToString(d.PK[:]) {
 		return nil, errors.New("lockbox: fingerprints did not match")
 	}
 
@@ -88,7 +88,7 @@ func (d *Decryptor) Decrypt(data []byte) ([]byte, error) {
 	}
 	copy(pk[:], bpk)
 
-	msg, ok := box.Open(nil, b.Bytes, &nonce, &pk, d.sk)
+	msg, ok := box.Open(nil, b.Bytes, &nonce, &pk, d.SK)
 	if !ok {
 		return nil, errors.New("lockbox: decryption failed")
 	}
