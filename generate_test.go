@@ -2,7 +2,9 @@ package lockbox
 
 import (
 	"bytes"
-
+	"crypto/rand"
+	"io"
+	"sync"
 	"testing"
 )
 
@@ -18,6 +20,43 @@ func TestGenerateKeyWithZeros(t *testing.T) {
 
 	if !bytes.Equal(dkey, zeroDKey) {
 		t.Errorf("got %x, want %x", dkey, zeroDKey)
+	}
+}
+
+func TestGenerateKeyIdempotent(t *testing.T) {
+	r1, pw := io.Pipe()
+	r2 := io.TeeReader(rand.Reader, pw)
+
+	var ekey1, dkey1, ekey2, dkey2 []byte
+	var err1, err2 error
+
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		ekey1, dkey1, err1 = GenerateKey(r1)
+		if err1 != nil {
+			t.Fatal(err1)
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		ekey2, dkey2, err2 = GenerateKey(r2)
+		if err2 != nil {
+			t.Fatal(err2)
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
+
+	if !bytes.Equal(ekey1, ekey2) {
+		t.Errorf("got different encryption keys, %x != %x", ekey1, ekey2)
+	}
+
+	if !bytes.Equal(dkey1, dkey2) {
+		t.Errorf("got different decryption keys, %x != %x", dkey1, dkey2)
 	}
 }
 
