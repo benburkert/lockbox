@@ -39,12 +39,12 @@ func TestDecryptionRoundtrip(t *testing.T) {
 	eb, _ := pem.Decode(ekey)
 	db, _ := pem.Decode(dkey)
 
-	e, err := encryptorFromBlock(eb)
+	e, err := NewEncryptor(eb)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	d, err := decryptorFromBlock(db)
+	d, err := NewDecryptor(db)
 	if err != nil {
 		t.Fatal(err)
 	}

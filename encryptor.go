@@ -14,12 +14,29 @@ import (
 
 var b64 = base64.StdEncoding
 
+// Encryptor encrypts data with an encryption (public) key.
 type Encryptor struct {
 	pk *[32]byte
 
 	r io.Reader
 }
 
+// NewEncryptor returns an Encryptor for the encryption (public) key PEM block.
+func NewEncryptor(ekey *pem.Block) (*Encryptor, error) {
+	if ekey.Type != "LOCKBOX ENCRYPTION KEY" {
+		return nil, errors.New("lockbox: invalid encryption key file")
+	}
+
+	pk := new([32]byte)
+	copy(pk[:], ekey.Bytes)
+
+	return &Encryptor{
+		pk: pk,
+		r:  rand.Reader,
+	}, nil
+}
+
+// LoadEncryptor returns an Encryptor for the encryption (public) key file.
 func LoadEncryptor(ekeyFile string) (*Encryptor, error) {
 	f, err := os.Open(ekeyFile)
 	if err != nil {
@@ -36,23 +53,15 @@ func LoadEncryptor(ekeyFile string) (*Encryptor, error) {
 		return nil, errors.New("lockbox: invalid encryption key file")
 	}
 
-	return encryptorFromBlock(b)
+	return NewEncryptor(b)
 }
 
-func encryptorFromBlock(b *pem.Block) (*Encryptor, error) {
-	if b.Type != "LOCKBOX ENCRYPTION KEY" {
-		return nil, errors.New("lockbox: invalid encryption key file")
-	}
-
-	pk := new([32]byte)
-	copy(pk[:], b.Bytes)
-
-	return &Encryptor{
-		pk: pk,
-		r:  rand.Reader,
-	}, nil
-}
-
+// Encrypt returns the encrypted contents of data in a single PEM encoded
+// block. The block type is 'LOCKBOX DATA' with base64 encoded headers:
+//
+//   Fingerprint: the identifying fingerprint of the decryption key
+//   Public-Key:  public key portion of the keypair generated for encryption
+//   Nonce:       nonce value used during encryption & decryption
 func (e *Encryptor) Encrypt(data []byte) ([]byte, error) {
 	var nonce [24]byte
 	e.r.Read(nonce[:])

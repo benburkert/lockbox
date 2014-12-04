@@ -10,10 +10,29 @@ import (
 	"golang.org/x/crypto/nacl/box"
 )
 
+// Decryptor decrypts data with a decryption (secret) key.
 type Decryptor struct {
 	pk, sk *[32]byte
 }
 
+// NewDecryptor returns a Decryptor for decrypting data encrypted with the
+// encryption (public) key corresponding to the decryption (private) key.
+func NewDecryptor(dkey *pem.Block) (*Decryptor, error) {
+	if dkey.Type != "LOCKBOX DECRYPTION KEY" {
+		return nil, errors.New("lockbox: invalid decryption key file")
+	}
+
+	pk, sk := new([32]byte), new([32]byte)
+	copy(sk[:], dkey.Bytes)
+	curve25519.ScalarBaseMult(pk, sk)
+
+	return &Decryptor{
+		pk: pk,
+		sk: sk,
+	}, nil
+}
+
+// LoadDecryptor returns a Decryptor for the decryption (private) key file.
 func LoadDecryptor(dkeyFile string) (*Decryptor, error) {
 	f, err := os.Open(dkeyFile)
 	if err != nil {
@@ -30,24 +49,11 @@ func LoadDecryptor(dkeyFile string) (*Decryptor, error) {
 		return nil, errors.New("lockbox: invalid decryption key file")
 	}
 
-	return decryptorFromBlock(b)
+	return NewDecryptor(b)
 }
 
-func decryptorFromBlock(b *pem.Block) (*Decryptor, error) {
-	if b.Type != "LOCKBOX DECRYPTION KEY" {
-		return nil, errors.New("lockbox: invalid decryption key file")
-	}
-
-	pk, sk := new([32]byte), new([32]byte)
-	copy(sk[:], b.Bytes)
-	curve25519.ScalarBaseMult(pk, sk)
-
-	return &Decryptor{
-		pk: pk,
-		sk: sk,
-	}, nil
-}
-
+// Decrypt returns the cleartext contents of the PEM encoded block of lockbox
+// encrypted ciphertext in data.
 func (d *Decryptor) Decrypt(data []byte) ([]byte, error) {
 	b, _ := pem.Decode(data)
 	if b == nil {

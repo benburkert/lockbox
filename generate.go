@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/nacl/box"
 )
 
+// GenerateKey returns a new pem encoded keypair.
 func GenerateKey(rand io.Reader) (ekey, dkey []byte, err error) {
 	pk, sk, err := box.GenerateKey(rand)
 	if err != nil {

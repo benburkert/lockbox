@@ -22,12 +22,12 @@ func init() {
 	eb, _ := pem.Decode(ekey)
 	db, _ := pem.Decode(dkey)
 
-	enc, err = encryptorFromBlock(eb)
+	enc, err = NewEncryptor(eb)
 	if err != nil {
 		panic(err)
 	}
 
-	dec, err = decryptorFromBlock(db)
+	dec, err = NewDecryptor(db)
 	if err != nil {
 		panic(err)
 	}
