@@ -71,6 +71,14 @@ Decrypt & print the message:
 	decryptor := lockbox.LoadDecryptor("testpair.dkey")
 	cleartext, err := decryptor.Decrypt(data)
 	fmt.Println(cleartext)
+
+Caveats
+
+Lockbox does not prevent a hostile party with access to the encryption key
+from replacing a message with a forgery. In this case, the decryptor is unable
+to detect if a message is a forgery. Lockbox data should only be transported
+over secure channels.
+
 */
 package lockbox
 
