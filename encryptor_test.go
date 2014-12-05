@@ -10,9 +10,7 @@ import (
 )
 
 func TestEncryptionWithZeros(t *testing.T) {
-	var pk [32]byte
-	b, _ := pem.Decode(zeroEKey)
-	copy(pk[:], b.Bytes)
+	pk, _ := zeroKey()
 
 	e := &Encryptor{
 		PK:     &pk,
@@ -38,8 +36,7 @@ func TestEncryptionIdempotent(t *testing.T) {
 	bpk, _ := pem.Decode(ekey)
 	copy(pk[:], bpk.Bytes)
 
-	r1, pw := io.Pipe()
-	r2 := io.TeeReader(rand.Reader, pw)
+	r1, r2 := teeRand()
 
 	e1 := &Encryptor{
 		PK:     &pk,
@@ -78,8 +75,14 @@ func TestEncryptionIdempotent(t *testing.T) {
 	wg.Wait()
 
 	if !bytes.Equal(b1, b2) {
-		t.Errorf("got different ciphertext, %s != %s", string(b1), string(b2))
+		t.Errorf("got different ciphertext, '%s' != '%s'", b1, b2)
 	}
+}
+
+func teeRand() (a, b io.Reader) {
+	a, w := io.Pipe()
+	b = io.TeeReader(rand.Reader, w)
+	return
 }
 
 var (

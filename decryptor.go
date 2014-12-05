@@ -18,7 +18,7 @@ type Decryptor struct {
 // NewDecryptor returns a Decryptor for decrypting data encrypted with the
 // encryption (public) key corresponding to the decryption (private) key.
 func NewDecryptor(dkey *pem.Block) (*Decryptor, error) {
-	if dkey.Type != "LOCKBOX DECRYPTION KEY" {
+	if dkey.Type != typeDecryptionKey {
 		return nil, errors.New("lockbox: invalid decryption key file")
 	}
 
@@ -59,17 +59,17 @@ func (d *Decryptor) Decrypt(data []byte) ([]byte, error) {
 	if b == nil {
 		return nil, errors.New("lockbox: pem decoding failed")
 	}
-	if b.Type != "LOCKBOX DATA" {
+	if b.Type != typeData {
 		return nil, errors.New("lockbox: invalid data")
 	}
 
-	fp := b.Headers["Fingerprint"]
+	fp := b.Headers[hdrFingerprint]
 	if fp != b64.EncodeToString(d.PK[:]) {
 		return nil, errors.New("lockbox: fingerprints did not match")
 	}
 
 	var nonce [24]byte
-	bnonce, err := b64.DecodeString(b.Headers["Nonce"])
+	bnonce, err := b64.DecodeString(b.Headers[hdrNonce])
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (d *Decryptor) Decrypt(data []byte) ([]byte, error) {
 	copy(nonce[:], bnonce)
 
 	var pk [32]byte
-	bpk, err := b64.DecodeString(b.Headers["Public-Key"])
+	bpk, err := b64.DecodeString(b.Headers[hdrPublicKey])
 	if err != nil {
 		return nil, err
 	}

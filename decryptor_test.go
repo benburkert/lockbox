@@ -10,9 +10,7 @@ import (
 )
 
 func TestDecryptionWithZeros(t *testing.T) {
-	sk := [32]byte{0}
-	var pk [32]byte
-	curve25519.ScalarBaseMult(&pk, &sk)
+	pk, sk := zeroKey()
 
 	d := &Decryptor{
 		PK: &pk,
@@ -63,4 +61,9 @@ func TestDecryptionRoundtrip(t *testing.T) {
 	if !bytes.Equal(got, want) {
 		t.Errorf("got '%s', want '%s'", got, want)
 	}
+}
+
+func zeroKey() (sk, pk [32]byte) {
+	curve25519.ScalarBaseMult(&pk, &sk)
+	return pk, sk
 }

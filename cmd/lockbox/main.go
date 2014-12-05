@@ -3,11 +3,10 @@ package main
 import (
 	"bytes"
 	"crypto/rand"
-	"encoding/pem"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
-
-	"golang.org/x/crypto/nacl/box"
 
 	"github.com/benburkert/lockbox"
 )
@@ -34,40 +33,31 @@ func main() {
 }
 
 func generate() {
+	if len(os.Args) != 3 {
+		help()
+		os.Exit(1)
+	}
+
 	filename := os.Args[2]
-
-	pkf, err := os.Create(filename + ".ekey")
-	if err != nil {
-		log.Fatal(err)
-	}
-	skf, err := os.Create(filename + ".dkey")
+	ekey, dkey, err := lockbox.GenerateKey(rand.Reader)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	pk, sk, err := box.GenerateKey(rand.Reader)
-	if err != nil {
+	if err := ioutil.WriteFile(filename+".ekey", ekey, 0644); err != nil {
 		log.Fatal(err)
 	}
-
-	pkb := pem.Block{
-		Type:  "LOCKBOX ENCRYPTION KEY",
-		Bytes: pk[:],
-	}
-	skb := pem.Block{
-		Type:  "LOCKBOX DECRYPTION KEY",
-		Bytes: sk[:],
-	}
-
-	if err := pem.Encode(pkf, &pkb); err != nil {
-		log.Fatal(err)
-	}
-	if err := pem.Encode(skf, &skb); err != nil {
+	if err := ioutil.WriteFile(filename+".dkey", dkey, 0644); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func encrypt() {
+	if len(os.Args) != 3 {
+		help()
+		os.Exit(1)
+	}
+
 	filename := os.Args[2]
 	if _, err := os.Stat(filename); err != nil {
 		log.Fatal(err)
@@ -92,6 +82,11 @@ func encrypt() {
 }
 
 func decrypt() {
+	if len(os.Args) != 3 {
+		help()
+		os.Exit(1)
+	}
+
 	filename := os.Args[2]
 	if _, err := os.Stat(filename); err != nil {
 		log.Fatal(err)
@@ -116,4 +111,14 @@ func decrypt() {
 }
 
 func help() {
+	fmt.Println(`lockbox - encryption/decryption tool built on NaCl
+
+usage: lockbox <command> [<args>...]
+
+Commands:
+
+  generate NAME       Generate new keypair files: NAME.ekey, NAME.dkey
+  encrypt EKEY        Encrypt the contents of STDIN with EKEY to STDOUT
+  decrypt DKEY        Decrypt the contents of STDIN with DKEY to STDOUT
+`)
 }

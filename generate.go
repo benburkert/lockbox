@@ -15,11 +15,11 @@ func GenerateKey(rand io.Reader) (ekey, dkey []byte, err error) {
 	}
 
 	pkb := &pem.Block{
-		Type:  "LOCKBOX ENCRYPTION KEY",
+		Type:  typeEncryptionKey,
 		Bytes: pk[:],
 	}
 	skb := &pem.Block{
-		Type:  "LOCKBOX DECRYPTION KEY",
+		Type:  typeDecryptionKey,
 		Bytes: sk[:],
 	}
 

@@ -70,12 +70,12 @@ func (r *zeroReader) Read(p []byte) (n int, err error) {
 
 var (
 	zeros    = &zeroReader{}
-	zeroDKey = []byte(`-----BEGIN LOCKBOX DECRYPTION KEY-----
+	zeroDKey = []byte(`-----BEGIN LOCKBOX SECRET DECRYPTION KEY-----
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
------END LOCKBOX DECRYPTION KEY-----
+-----END LOCKBOX SECRET DECRYPTION KEY-----
 `)
-	zeroEKey = []byte(`-----BEGIN LOCKBOX ENCRYPTION KEY-----
+	zeroEKey = []byte(`-----BEGIN LOCKBOX PUBLIC ENCRYPTION KEY-----
 L+V9o0fNYkMVKNqsX7spBzD/9oSvxM/C7ZCZX1jLO3Q=
------END LOCKBOX ENCRYPTION KEY-----
+-----END LOCKBOX PUBLIC ENCRYPTION KEY-----
 `)
 )

@@ -2,7 +2,6 @@ package lockbox
 
 import (
 	"crypto/rand"
-	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"io"
@@ -12,8 +11,6 @@ import (
 	"golang.org/x/crypto/nacl/box"
 )
 
-var b64 = base64.StdEncoding
-
 // Encryptor encrypts data with an encryption (public) key.
 type Encryptor struct {
 	PK     *[32]byte // public key
@@ -22,7 +19,7 @@ type Encryptor struct {
 
 // NewEncryptor returns an Encryptor for the encryption (public) key PEM block.
 func NewEncryptor(ekey *pem.Block) (*Encryptor, error) {
-	if ekey.Type != "LOCKBOX ENCRYPTION KEY" {
+	if ekey.Type != typeEncryptionKey {
 		return nil, errors.New("lockbox: invalid encryption key file")
 	}
 
@@ -70,15 +67,14 @@ func (e *Encryptor) Encrypt(data []byte) ([]byte, error) {
 	}
 
 	ct := box.Seal(nil, data, &nonce, e.PK, sk)
-	hdrs := map[string]string{
-		"Fingerprint": b64.EncodeToString(e.PK[:]),
-		"Public-Key":  b64.EncodeToString(pk[:]),
-		"Nonce":       b64.EncodeToString(nonce[:]),
-	}
 	b := &pem.Block{
-		Type:    "LOCKBOX DATA",
-		Headers: hdrs,
-		Bytes:   ct,
+		Type: typeData,
+		Headers: map[string]string{
+			hdrFingerprint: b64.EncodeToString(e.PK[:]),
+			hdrPublicKey:   b64.EncodeToString(pk[:]),
+			hdrNonce:       b64.EncodeToString(nonce[:]),
+		},
+		Bytes: ct,
 	}
 	return pem.EncodeToMemory(b), nil
 }
