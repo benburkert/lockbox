@@ -54,8 +54,8 @@ func lbEncrypt(key string, b *testing.B) {
 	if !ok {
 		b.Fatalf("missing chunk %s", key)
 	}
-	b.SetBytes(int64(len(data)))
 
+	b.SetBytes(int64(len(data)))
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		enc.Encrypt(data)
@@ -78,8 +78,8 @@ func lbDecrypt(key string, b *testing.B) {
 	if err != nil {
 		panic(err)
 	}
-	b.SetBytes(int64(len(data)))
 
+	b.SetBytes(int64(len(chunk)))
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		dec.Decrypt(data)
