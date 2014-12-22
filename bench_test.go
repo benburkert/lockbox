@@ -13,12 +13,12 @@ var (
 	dec *Decryptor
 
 	chunks = map[string][]byte{
-		"128B":  mustRandomBytes(128),
-		"4KB":   mustRandomBytes(4096),
-		"64KB":  mustRandomBytes(65536),
-		"512KB": mustRandomBytes(524288),
-		"1MB":   mustRandomBytes(1048576),
-		"4MB":   mustRandomBytes(4194304),
+		"1B":   make([]byte, 1),
+		"64B":  make([]byte, 64),
+		"1KB":  make([]byte, 1024),
+		"64KB": make([]byte, 65536),
+		"1MB":  make([]byte, 1048576),
+		"64MB": make([]byte, 67108864),
 	}
 )
 
@@ -42,12 +42,12 @@ func init() {
 	}
 }
 
-func BenchmarkLockboxEncrypt128B(b *testing.B)  { lbEncrypt("128B", b) }
-func BenchmarkLockboxEncrypt4KB(b *testing.B)   { lbEncrypt("4KB", b) }
-func BenchmarkLockboxEncrypt64KB(b *testing.B)  { lbEncrypt("64KB", b) }
-func BenchmarkLockboxEncrypt512KB(b *testing.B) { lbEncrypt("512KB", b) }
-func BenchmarkLockboxEncrypt1MB(b *testing.B)   { lbEncrypt("1MB", b) }
-func BenchmarkLockboxEncrypt4MB(b *testing.B)   { lbEncrypt("4MB", b) }
+func BenchmarkLockboxEncrypt1B(b *testing.B)   { lbEncrypt("1B", b) }
+func BenchmarkLockboxEncrypt64B(b *testing.B)  { lbEncrypt("64B", b) }
+func BenchmarkLockboxEncrypt1KB(b *testing.B)  { lbEncrypt("1KB", b) }
+func BenchmarkLockboxEncrypt64KB(b *testing.B) { lbEncrypt("64KB", b) }
+func BenchmarkLockboxEncrypt1MB(b *testing.B)  { lbEncrypt("1MB", b) }
+func BenchmarkLockboxEncrypt64MB(b *testing.B) { lbEncrypt("64MB", b) }
 
 func lbEncrypt(key string, b *testing.B) {
 	data, ok := chunks[key]
@@ -62,12 +62,12 @@ func lbEncrypt(key string, b *testing.B) {
 	}
 }
 
-func BenchmarkLockboxDecrypt128(b *testing.B)   { lbDecrypt("128B", b) }
-func BenchmarkLockboxDecrypt4096(b *testing.B)  { lbDecrypt("4KB", b) }
-func BenchmarkLockboxDecrypt64KB(b *testing.B)  { lbDecrypt("64KB", b) }
-func BenchmarkLockboxDecrypt512KB(b *testing.B) { lbDecrypt("512KB", b) }
-func BenchmarkLockboxDecrypt1MB(b *testing.B)   { lbDecrypt("1MB", b) }
-func BenchmarkLockboxDecrypt4MB(b *testing.B)   { lbDecrypt("4MB", b) }
+func BenchmarkLockboxDecrypt1B(b *testing.B)   { lbDecrypt("1B", b) }
+func BenchmarkLockboxDecrypt64B(b *testing.B)  { lbDecrypt("64B", b) }
+func BenchmarkLockboxDecrypt1KB(b *testing.B)  { lbDecrypt("1KB", b) }
+func BenchmarkLockboxDecrypt64KB(b *testing.B) { lbDecrypt("64KB", b) }
+func BenchmarkLockboxDecrypt1MB(b *testing.B)  { lbDecrypt("1MB", b) }
+func BenchmarkLockboxDecrypt64MB(b *testing.B) { lbDecrypt("64MB", b) }
 
 func lbDecrypt(key string, b *testing.B) {
 	chunk, ok := chunks[key]
