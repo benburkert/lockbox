@@ -9,7 +9,7 @@ import (
 )
 
 func TestGenerateKeyWithZeros(t *testing.T) {
-	ekey, dkey, err := GenerateKey(zeros)
+	ekey, dkey, err := generateKey(zeros)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func TestGenerateKeyIdempotent(t *testing.T) {
 	wg.Add(2)
 
 	go func() {
-		ekey1, dkey1, err1 = GenerateKey(r1)
+		ekey1, dkey1, err1 = generateKey(r1)
 		if err1 != nil {
 			t.Fatal(err1)
 		}
@@ -42,7 +42,7 @@ func TestGenerateKeyIdempotent(t *testing.T) {
 	}()
 
 	go func() {
-		ekey2, dkey2, err2 = GenerateKey(r2)
+		ekey2, dkey2, err2 = generateKey(r2)
 		if err2 != nil {
 			t.Fatal(err2)
 		}

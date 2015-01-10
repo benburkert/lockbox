@@ -23,7 +23,7 @@ var (
 )
 
 func init() {
-	ekey, dkey, err := GenerateKey(rand.Reader)
+	ekey, dkey, err := GenerateKey()
 	if err != nil {
 		panic(err)
 	}

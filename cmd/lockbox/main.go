@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/rand"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -39,7 +38,7 @@ func generate() {
 	}
 
 	filename := os.Args[2]
-	ekey, dkey, err := lockbox.GenerateKey(rand.Reader)
+	ekey, dkey, err := lockbox.GenerateKey()
 	if err != nil {
 		log.Fatal(err)
 	}

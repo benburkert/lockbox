@@ -29,7 +29,7 @@ func TestEncryptionWithZeros(t *testing.T) {
 
 func TestEncryptionIdempotent(t *testing.T) {
 	var pk [32]byte
-	ekey, _, err := GenerateKey(rand.Reader)
+	ekey, _, err := GenerateKey()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func TestEncryptionIdempotent(t *testing.T) {
 func teeRand() (a, b io.Reader) {
 	a, w := io.Pipe()
 	b = io.TeeReader(rand.Reader, w)
-	return
+	return a, b
 }
 
 var (

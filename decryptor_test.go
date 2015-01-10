@@ -2,7 +2,6 @@ package lockbox
 
 import (
 	"bytes"
-	"crypto/rand"
 	"encoding/pem"
 	"testing"
 
@@ -29,7 +28,7 @@ func TestDecryptionWithZeros(t *testing.T) {
 }
 
 func TestDecryptionRoundtrip(t *testing.T) {
-	ekey, dkey, err := GenerateKey(rand.Reader)
+	ekey, dkey, err := GenerateKey()
 	if err != nil {
 		t.Fatal(err)
 	}
